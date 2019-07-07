@@ -3,8 +3,13 @@ import numpy as np
 import xlearn as xl
 import pickle
 import gc
+import redis
 
 from format_usage import df2libffm
+
+### redis
+
+r = redis.Redis(host='localhost', port=6380, db=0)
 
 ### 导入数据
 
@@ -41,9 +46,12 @@ for col in cols_int64:
     
 ### 转换格式，拿到cate_type
 cate_type = df2libffm(df_train, y='label', save_file='./data/train_ffm.txt')
+# 保存宝贵的cate_type 的mapper
 with open('./model/cate_type.pkl', 'wb') as f:
     pickle.dump(cate_type, f)
+    
 del df_train
+del jdata_action_train
 gc.collect()
 
 ### model
@@ -60,3 +68,10 @@ fm_model.setTXTModel("./model/model.txt")   # 这句话要放在fit之前
 fm_model.fit(param, "./model/model.out")
 # fm_model.setSigmoid()  # or ffm_model.setSign()
 
+### 将离线模型导入到redis中
+with open('./model/model.txt', 'r') as f:
+    for i, line in enumerate(f.readlines()):
+        key, vec = line.split(':')
+        if i % 1000000 == 0:
+            r.hset('fm_weights', key, vec[1:-1])
+            print('successfully insert {} to redis'.format(i))

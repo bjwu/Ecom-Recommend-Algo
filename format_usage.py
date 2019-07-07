@@ -73,6 +73,18 @@ def df2libffm(df, save_file=None, y=None, non_categorical_cols = []) :
     else:
         return out, cate_memo
 
+### TODO: 判断user或者item没在set中
+def items2ffm(user:int, itemset, mapper, valid_cols:list):
+    df_test = pd.DataFrame(itemset, columns=['sku_id'])
+    df_test['user_id'] = user
+    df_test = df_test.merge(jdata_product,on='sku_id',how='left')
+    df_test = df_test.merge(jdata_user,on='user_id',how='left')
+    df_test = df_test.fillna(0)
+    df_test = df_test[valid_cols]
+    # 进行categocial过程
+    for c in df_test.columns:
+        df_test[c] = df_test[c].astype(mapper[c]['dytpe']).astype(int) + mapper[c]['base']
+    return df_test
 
 # Usage Sample
 # data = pd.read_parquet("xxx.parquet") # your data
