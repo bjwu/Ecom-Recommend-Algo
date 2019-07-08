@@ -20,7 +20,7 @@ def df2libffm(df, save_file=None, y=None, non_categorical_cols = []) :
         y: df[y]
     })
 
-    print("out.shape:", out.shape )
+    print("out.shape:", out.shape)
     df = df.drop(columns=[y], axis=1)
 
     feature_base = 0
