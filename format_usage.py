@@ -47,7 +47,7 @@ def df2libffm(df, save_file=None, y=None, non_categorical_cols = []) :
             ## IMPORTANT: 加入categorical dtype，方便之后的数据转化
             cate_memo[col] = {}
             cate_memo[col]['base'] = feature_base
-            cate_memo[col]['dytpe'] = df[col].astype('category').dtypes
+            cate_memo[col]['dtype'] = df[col].astype('category').dtypes
             ### 使用s.astype(cate_type)进行转换
             
             ## 为每一个category特征编号
