@@ -117,12 +117,13 @@ if False:
     # fm_model.setSigmoid()  # or ffm_model.setSign()
 
     ### 将离线模型导入到redis中
+    print('Start insert model to redis...')
     with open('./model/model.txt', 'r') as f:
-        for i, line in enumerate(f.readlines()):
+        for line in tqdm(f.readlines()):
             key, vec = line.split(':')
-            if i % 1000000 == 0:
-                r.hset('fm_weights', key, vec[1:-1])
-                print('Successfully insert {} to redis'.format(i))
+            r.hset('fm_weights', key, vec[1:-1])
+    print('Success insert model to redis!')
+                
 
 
 

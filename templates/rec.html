@@ -1,0 +1,13 @@
+<!doctype html>
+<body>
+    <h2>I am user: {{user}}</h2>
+    
+    <h3>Below are items recommended for me:</h3>
+    
+    <form action="/user/{{user}}" method="post">
+        <input type="submit" name="item" value="{{item0}}">
+        <input type="submit" name="item" value="{{item1}}">
+        <input type="submit" name="item" value="{{item2}}">
+    </form>
+    
+</body>
