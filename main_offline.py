@@ -8,6 +8,7 @@ import xlearn as xl
 
 from format_usage import df2libffm
 from recall import recall_functions
+from tqdm import tqdm
 
 ### redis
 r = redis.Redis(host='localhost', port=6380, db=0)
@@ -23,6 +24,14 @@ jdata_shop = pd.read_csv('./raw/jdata_shop.csv',sep=',')
 jdata_user = pd.read_csv('./raw/jdata_user.csv',sep=',')
 print('Data imported success...')
 
+itemset = set(jdata_action_train.sku_id.unique())
+userset = set(jdata_action_train.user_id.unique())
+with open('./model/itemset.pkl', 'wb') as f:
+    pickle.dump(itemset, f)
+with open('./model/userset.pkl', 'wb') as f:
+    pickle.dump(userset, f)
+print('Store user & sku set success...')
+        
 if False:
 
     ### 建立正负样本
@@ -97,7 +106,7 @@ if False:
 
 ############################## FM MODEL ###########################
 
-if False:
+if True:
 
     ### 计算FM离线模型
 
@@ -124,7 +133,3 @@ if False:
             r.hset('fm_weights', key, vec[1:-1])
     print('Success insert model to redis!')
                 
-
-
-
-

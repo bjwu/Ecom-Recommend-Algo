@@ -98,6 +98,13 @@ cate_memo[col]['dytpe'] = df[col].astype('category').dtypes
 具体操作见：
 https://pandas.pydata.org/pandas-docs/stable/user_guide/categorical.html
 
+### HBase数据导入
+
+import hbase2python
+调用 HBase2Python(limitation = 100) #不设置limitation则全表扫描
+
+
+
 ### 离线模型
 
 离线模型当然由flink触发我，首先从hbase里拿取前两个月的数据，然后进行所有的召回过程，这个过程可能得进行一会儿，这个时候会依次更新redis里的数据。

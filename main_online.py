@@ -64,7 +64,7 @@ def tcplink(sock, addr):
             sock.send(error.encode())
             continue
 
-        items_before = [int(i[:-2]) for i in r_79.lrange("latest:"+ str(int(user)), 0, 9)]
+        items_before = [int(i[:-2]) for i in r_79.lrange("latest:"+ str(int(user)), 0, 9) if int(i[:-2]) in itemset_all]
 
         ### TODO:应该把用户信息存在redis中
         city = int(jdata_user[jdata_user['user_id']==int(user)].city.values[0])
@@ -112,6 +112,12 @@ if __name__ == '__main__':
     
     f = open('./model/brand_sim_metrix.pkl', 'rb')
     SIM_brand_list = pickle.load(f)
+    
+    f = open('./model/itemset.pkl', 'rb')
+    itemset_all = pickle.load(f)
+    
+    f = open('./model/userset.pkl', 'rb')
+    userset_all = pickle.load(f)
     
     while True:
     # 接受一个新连接:
