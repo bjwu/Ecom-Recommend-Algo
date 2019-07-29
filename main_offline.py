@@ -1,4 +1,11 @@
-### 这里是离线模型的主进程
+# -*- coding: utf-8 -*-
+# vim: tabstop=4 shiftwidth=4 expandtab number
+
+"""
+这里是离线模型的主进程
+
+Author: Wu Bijia, Zhu Shengda
+"""
 import pandas as pd
 import numpy as np
 import pickle
@@ -24,6 +31,7 @@ jdata_shop = pd.read_csv('./raw/jdata_shop.csv',sep=',')
 jdata_user = pd.read_csv('./raw/jdata_user.csv',sep=',')
 print('Data imported success...')
 
+# 将用户集和物品集存储到内存，这里也需要改进，应该存从现在为止至今的用户和物品，而不仅仅是这两个月
 itemset = set(jdata_action_train.sku_id.unique())
 userset = set(jdata_action_train.user_id.unique())
 with open('./model/itemset.pkl', 'wb') as f:
@@ -32,7 +40,7 @@ with open('./model/userset.pkl', 'wb') as f:
     pickle.dump(userset, f)
 print('Store user & sku set success...')
         
-if False:
+if True:
 
     ### 建立正负样本
     df_train = jdata_action_train.groupby(['user_id','sku_id'])['type'].count()
@@ -76,7 +84,7 @@ if False:
 
 ############################## RECALL ###########################
 
-if False:
+if True:
     ### 新建recall实例
 
     df = jdata_action_train[['user_id','sku_id','type','action_time']].merge(jdata_product,on='sku_id',how='left')
@@ -118,7 +126,7 @@ if True:
              'lambda':0.002, 
              'metric':'auc',
              'opt': 'adagrad',
-             'k': 16   #隐向量长度
+             'k': 16                 #隐向量长度
             }
     fm_model.setTXTModel("./model/model.txt")   # 这句话要放在fit之前
     fm_model.fit(param, "./model/model.out")

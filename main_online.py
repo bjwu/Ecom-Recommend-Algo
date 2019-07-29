@@ -1,4 +1,12 @@
-### 这里是在线模型的主进程
+# -*- coding: utf-8 -*-
+# vim: tabstop=4 shiftwidth=4 expandtab number
+
+"""
+这里是在线模型的主进程
+
+Author: Wu Bijia, Zhu Shengda
+"""
+
 import pandas as pd
 import numpy as np
 import pickle
@@ -7,6 +15,7 @@ import redis
 import socket
 import threading
 import time
+from kafka import KafkaProducer
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -14,11 +23,11 @@ jdata_user = pd.read_csv('./raw/jdata_user.csv',sep=',')
 jdata_product = pd.read_csv('./raw/jdata_product.csv',sep=',')
 
 ### redis
+### 我们把不同的数据维护在了不同端口上，主要是因为我们维护的数据库不一样
 r_79 = redis.Redis(host='localhost', port=6379, db=0)
 r_80 = redis.Redis(host='localhost', port=6380, db=0)
 
 ### 当新的items过来
-### TODO: 判断user或者item没在set中
 def items2ffm(user:int, itemset, mapper, valid_cols:list):
     df_test = pd.DataFrame(itemset, columns=['sku_id'])
     tmp = df_test['sku_id']
@@ -48,11 +57,13 @@ def items2items(items_rtn, k):
         item_out.extend(r_80.zrange('brand:'+str(int(i)), 0, k))
     return {int(i) for i in random.sample(item_out, k)}
 
+### 接受flink的新log，传给flink推荐的itemset
 def tcplink(sock, addr):
     print('Accept new connection from %s:%s...' % addr)
     sock.send(b'Welcome!!!\n')
 
     cnt = 0
+    producer = KafkaProducer(bootstrap_servers=['localhost:9092']) #创建kafka producer
     while True:
         data = sock.recv(1024)
         try:
@@ -63,7 +74,8 @@ def tcplink(sock, addr):
             error = "please give a btye object like b'userid itemid', thanks"
             sock.send(error.encode())
             continue
-
+        
+        ### 从redis中读取用户最近10次买的items
         items_before = [int(i[:-2]) for i in r_79.lrange("latest:"+ str(int(user)), 0, 9) if int(i[:-2]) in itemset_all]
 
         ### TODO:应该把用户信息存在redis中
@@ -94,6 +106,8 @@ def tcplink(sock, addr):
             towrite += '\n'
         try:
             sock.send(towrite.encode())
+            future = producer.send('logFromOnlineModel' , value= towrite.encode(), partition= 0) #kafka topic为 logFromOnlineModel
+            result = future.get(timeout= 10)
         except:
             break
     sock.close()
@@ -102,7 +116,7 @@ def tcplink(sock, addr):
 if __name__ == '__main__':
     
     ### 打开端口
-    s.bind(('localhost', 8022))
+    s.bind(('192.168.122.1', 8022)) #这里需要把localhost改为192.168.122.1
     s.listen(5)
     print('Waiting for connection...')
     
