@@ -3,7 +3,7 @@
 """
 
 import random
-from pandas as pd
+import pandas as pd
 from tqdm import tqdm
 
 jdata_action_train = pd.read_csv('./data/jdata_action_sorted.csv', sep=',')

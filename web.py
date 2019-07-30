@@ -4,7 +4,9 @@ import redis
 import time
 import pickle
 
-r = redis.Redis(host='localhost', port=6379, db=0)
+r_79 = redis.Redis(host='localhost', port=6379, db=0)
+r_80 = redis.Redis(host='localhost', port=6380, db=0)
+r_81 = redis.Redis(host='localhost', port=6381, db=0)
 
 k = KafkaProducer(bootstrap_servers='localhost:9092')
 
@@ -27,17 +29,17 @@ def index():
 def show_user_rec(username, new=False):
     msg = "Below are the items recommended for you"
     if new:
-        items = [int(i) for i in r.zrange('hottest_one_week_before', 0, 2, desc=True)]
+        items = [int(i) for i in r_80.zrange('hottest_one_week_before', 0, 2, desc=True)]
         msg = "Welcome! New Customer.\n These are the hottest items this week recommended for you"
         return render_template("rec.html", user=username, item0=items[0], item1=items[1], item2=items[2], message=msg)
     # TODO: latest要改成rec. items那个需要加try except
-    items = [int(i[:-2]) for i in r.lrange("latest:"+ str(int(username)), 0, 2)]
+    items = [int(i[:-2]) for i in r_79.lrange("latest:"+ str(int(username)), 0, 2)]
     if request.method == 'POST':
         newitem = request.form['item']
         newlog = ','.join([str(username),str(newitem), 'test', str(88888), str(1)])
         k.send('logFromWeb', newlog.encode('utf-8'))
-        time.sleep(1)
-        items = [int(i[:-2]) for i in r.lrange("latest:"+ str(int(username)), 0, 2)]
+        time.sleep(2)
+        items = [int(i) for i in r_81.lrange("rec:"+ str(int(username)), 0, 2)]
     return render_template("rec.html", user=username, item0=items[0], item1=items[1], item2=items[2], message=msg)
 
 
